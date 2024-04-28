@@ -1,9 +1,8 @@
-from line import Line, Point
-from window import Window
+from graphics import Line, Point
 
 
 class Cell:
-    def __init__(self, win: Window):
+    def __init__(self, win):
         self._win = win
         self._x1 = None
         self._x2 = None
