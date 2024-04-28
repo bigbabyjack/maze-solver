@@ -53,12 +53,12 @@ class Maze:
         if self._win is None:
             return
         self._win.redraw()
-        time.sleep(0.05)
+        time.sleep(0.01)
 
     def _break_entrance_and_exit(self):
-        self._cells[0][0]._has_top_wall = False
+        self._cells[0][0].has_top_wall = False
         self._draw_cell(0, 0)
-        self._cells[self._num_cols - 1][self._num_rows - 1]._has_bottom_wall = False
+        self._cells[self._num_cols - 1][self._num_rows - 1].has_bottom_wall = False
         self._draw_cell(self._num_cols - 1, self._num_rows - 1)
 
     def _break_walls_r(self, i, j):
@@ -71,6 +71,7 @@ class Maze:
                     if not self._cells[new_x][new_y]._visited:
                         to_visit.append((dx, dy))
             if len(to_visit) == 0:
+                self._draw_cell(i, j)
                 return
             else:
                 dx, dy = random.choice(to_visit)
@@ -92,30 +93,68 @@ class Maze:
         return 0 <= i < self._num_cols and 0 <= j < self._num_rows
 
     def _reset_cells_visited(self):
-        for i in range(self._num_cols):
-            for j in range(self._num_rows):
-                self._cells[i][j].visited = False
+        for col in self._cells:
+            for cell in col:
+                cell.visited = False
 
     def solve(self):
+        print("Solving maze...")
         self._solve_r(0, 0)
 
     def _solve_r(self, i, j):
         self._animate()
-        self._cells[i][j]._visited = True
+        self._cells[i][j].visited = True
+
         if i == self._num_cols - 1 and j == self._num_rows - 1:
             return True
-        for dx, dy in self._directions.keys():
-            if self._is_valid_cell(i + dx, j + dy):
-                if (
-                    self._directions[(dx, dy)] == "top"
-                    and not self._cells[i][j].has_top_wall
-                    and not self._cells[i][j]._visited
-                ):
-                    self._cells[i][j].draw_move(self._cells[i + dx][j + dy])
-                    if self._solve_r(i + dx, j + dy):
-                        return True
-                    else:
-                        self._cells[i][j].draw_move(
-                            self._cells[i + dx][j + dy], undo=True
-                        )
+
+        # move left if there is no wall and it hasn't been visited
+        if (
+            i > 0
+            and not self._cells[i][j].has_left_wall
+            and not self._cells[i - 1][j].visited
+        ):
+            self._cells[i][j].draw_move(self._cells[i - 1][j])
+            if self._solve_r(i - 1, j):
+                return True
+            else:
+                self._cells[i][j].draw_move(self._cells[i - 1][j], True)
+
+        # move right if there is no wall and it hasn't been visited
+        if (
+            i < self._num_cols - 1
+            and not self._cells[i][j].has_right_wall
+            and not self._cells[i + 1][j].visited
+        ):
+            self._cells[i][j].draw_move(self._cells[i + 1][j])
+            if self._solve_r(i + 1, j):
+                return True
+            else:
+                self._cells[i][j].draw_move(self._cells[i + 1][j], True)
+
+        # move up if there is no wall and it hasn't been visited
+        if (
+            j > 0
+            and not self._cells[i][j].has_top_wall
+            and not self._cells[i][j - 1].visited
+        ):
+            self._cells[i][j].draw_move(self._cells[i][j - 1])
+            if self._solve_r(i, j - 1):
+                return True
+            else:
+                self._cells[i][j].draw_move(self._cells[i][j - 1], True)
+
+        # move down if there is no wall and it hasn't been visited
+        if (
+            j < self._num_rows - 1
+            and not self._cells[i][j].has_bottom_wall
+            and not self._cells[i][j + 1].visited
+        ):
+            self._cells[i][j].draw_move(self._cells[i][j + 1])
+            if self._solve_r(i, j + 1):
+                return True
+            else:
+                self._cells[i][j].draw_move(self._cells[i][j + 1], True)
+
+        # we went the wrong way let the previous cell know by returning False
         return False
