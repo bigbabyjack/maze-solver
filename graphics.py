@@ -6,9 +6,9 @@ class Window:
         self.__root = Tk()
         self.__root.title("Maze Solver")
         self.__root.protocol("WM_DELETE_WINDOW", self.close)
-        self.canvas = Canvas(self.__root, bg="white",
-                             height=height, width=width)
-        self.canvas.pack(fill=BOTH, expand=1)
+        self.__canvas = Canvas(self.__root, bg="white",
+                               height=height, width=width)
+        self.__canvas.pack(fill=BOTH, expand=1)
         self.__running = False
 
     def redraw(self):
@@ -24,8 +24,8 @@ class Window:
     def close(self):
         self.__running = False
 
-    def draw_line(self, line, fill_color: str):
-        line.draw(canvas=self.canvas, fill_color=fill_color)
+    def draw_line(self, line, fill_color: str = "red"):
+        line.draw(canvas=self.__canvas, fill_color=fill_color)
 
 
 class Point:
